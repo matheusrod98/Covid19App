@@ -1,6 +1,5 @@
 import React from 'react'
 import { View, Image, StyleSheet, Text } from 'react-native'
-import covidTitle_small from "../assets/images/covidTitle_small.png"
 import {TouchableOpacity} from 'react-native-gesture-handler'
 
 import { height, width } from "../constants/dimensions"
