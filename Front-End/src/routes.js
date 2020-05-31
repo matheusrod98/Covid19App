@@ -19,7 +19,17 @@ function LoggedInFlow () {
         <Stack.Navigator>
             <Stack.Screen name = "mainFeed" component = {TabFlow} options = {{headerShown: false}} />
             <Stack.Screen name = "comment" component = {CommentScreen} />
-            <Stack.Screen name = "posting" component = {PostingScreen} />
+            <Stack.Screen 
+                name = "posting" 
+                component = {PostingScreen} 
+                options = {{
+                    headerTitleAlign: "center",
+                    title: "Criar Publicação",
+                    headerTitleStyle: {
+                        fontWeight: "bold",
+                    }
+                }}
+            />
         </Stack.Navigator>
     )
 }

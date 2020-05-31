@@ -30,7 +30,7 @@ const FeedHeader = ({ navigate, count }) => {
 const styles = StyleSheet.create ({
     container: {
         flex: 1,
-        marginTop: height * 0.05,
+        marginTop: height * 0.063,
     },
 
     image: {
