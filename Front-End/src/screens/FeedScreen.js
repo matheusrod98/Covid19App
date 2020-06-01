@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, Button, AsyncStorage, FlatList, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { SafeAreaView, Button, AsyncStorage, FlatList, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 
 import api from '../services/api'
 import Post from "../components/Post"
@@ -10,17 +10,24 @@ import { MaterialCommunityIcons  } from '@expo/vector-icons';
 export default function FeedScreen ({navigation: {navigate}}) {
     const [posts, setPosts] = useState (null)
     const [postCount, setPostCount] = useState (null)
+    const [loadingPosts, setLoadingPosts] = useState (true)
 
     async function loadPosts () {
+        setLoadingPosts (true)
+
         try {
             const response = await api.get ("/postagens/")
-            setPosts (response.data)
+            setPosts (response.data.reverse ())
             setPostCount (response.data.lenght)
             console.log ("Nossa data: ", response.data)
         }
 
         catch (error) {
             console.log (error)
+        }
+
+        finally {
+            setLoadingPosts (false)
         }
     }
 
@@ -34,6 +41,7 @@ export default function FeedScreen ({navigation: {navigate}}) {
         }
         catch (error) {
             console.log (error);
+            alert ("Não conseguimos pegar os dados da API.")
         }
 
         finally {
@@ -43,16 +51,20 @@ export default function FeedScreen ({navigation: {navigate}}) {
     
     return (
         <SafeAreaView style = { styles.container }>
-            <FlatList 
-                ListHeaderComponent = { <FeedHeader navigate = { navigate } count = { postCount } /> }
-                data = {posts}
-                showsVerticalScrollIndicator = { false }
-                keyExtractor = {(item) => String (item.id)}
-                renderItem = {({item}) => <Post data = { item } />}
-                accessibilityElementsHidden = { false }
-            />
+            { loadingPosts ? (<ActivityIndicator size = "large" />) : 
+                (
+                    <FlatList 
+                        ListHeaderComponent = { <FeedHeader navigate = { navigate } count = { postCount } /> }
+                        data = {posts}
+                        showsVerticalScrollIndicator = { false }
+                        keyExtractor = {(item) => String (item.id)}
+                        renderItem = {({item}) => <Post data = { item } />}
+                        accessibilityElementsHidden = { false }
+                    />
+                )
+            }
 
-            <TouchableOpacity style = { styles.reloadButton }>
+            <TouchableOpacity style = { styles.reloadButton } onPress = { () => loadPosts () }>
                 <MaterialCommunityIcons name="reload" size={ width * 0.07 } color="#FFFFFF" />
             </TouchableOpacity>
 
@@ -68,7 +80,7 @@ const styles = StyleSheet.create ({
         flex: 1, 
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: height * 0.065,
+        paddingTop: height * 0.08,
     },
 
     reloadButton: {

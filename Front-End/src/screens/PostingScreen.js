@@ -1,22 +1,71 @@
 import React,{ useState, useLayoutEffect } from 'react'
-import { SafeAreaView, TextInput, StyleSheet, TouchableWithoutFeedback, Keyboard, TouchableOpacity, Text, } from 'react-native'
+import { SafeAreaView, TextInput, StyleSheet, TouchableWithoutFeedback, Keyboard, TouchableOpacity, Text, AsyncStorage, } from 'react-native'
+import * as Permissions from "expo-permissions"
+import * as ImagePicker from "expo-image-picker"
 
 import { height, width } from "../constants/dimensions"
 import { Entypo  } from '@expo/vector-icons';
+import api from "../services/api"
 
 const PostingScreen = ({ navigation }) => {
     const [title, setTitle] = useState ("")
     const [text, setText] = useState ("")
+    const [image, setImage] = useState (null)
+
+    async function post () {
+        const postData = {
+            usuario: await AsyncStorage.getItem ("user"),
+            titulo: title,
+            texto: text,
+            image: null
+        }
+        
+        jsonPostData = JSON.stringify (postData)
+        
+        try {
+            const response = await api.post ("/postagens/", jsonPostData, {
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            })
+            console.log (response)
+
+        }
+        catch (error) {
+            alert ("Houve algum erro.")
+        }
+
+        finally {
+            navigation.navigate ("Feed")
+        }
+    }
 
     useLayoutEffect ( () => {
         navigation.setOptions ({
             headerRight: () => (
-                <TouchableOpacity style = { styles.headerPostButton }>
+                <TouchableOpacity style = { styles.headerPostButton } onPress = { () => post () }>
                     <Text style = { styles.headerPostButtonText }>Postar</Text>
                 </TouchableOpacity>
             ),
         })
     }, [navigation])
+
+    async function chooseFromGallery () {
+        const { status } = await Permissions.askAsync (Permissions.CAMERA_ROLL)
+
+        if (status === "granted") {
+            const result  = await ImagePicker.launchImageLibraryAsync ({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                allowsEditing: true,
+                aspect: [4,3],
+                quality: 1,
+            })
+
+            if (!result.cancelled) {
+                setImage (result.uri)
+            }
+        }
+    }
             
     return (
         <TouchableWithoutFeedback onPress = { () => Keyboard.dismiss () }>
@@ -35,10 +84,10 @@ const PostingScreen = ({ navigation }) => {
                 multiline
             />
 
-            <TouchableOpacity style = { styles.imageButton } onPress = { () => console.log ("Imagem adicionada") }>
-                <Entypo name = "image" size = {24} color = "#FFFFFF" />
-                <Text style = { styles.imageButtonText }>Adicionar imagem </Text>
-            </TouchableOpacity>
+                <TouchableOpacity style = { styles.imageButton } onPress = { () => chooseFromGallery () }>
+                    <Entypo name = "image" size = {24} color = "#FFFFFF" />
+                    <Text style = { styles.imageButtonText }>Adicionar imagem </Text>
+                </TouchableOpacity>
         </SafeAreaView>
     </TouchableWithoutFeedback>
     )
@@ -90,7 +139,7 @@ const styles = StyleSheet.create ({
         height: height * 0.07,
         borderColor: "#75FFAF",
         borderWidth: 1,
-        color: "#dadada",
+        color: "black",
         width: width * 0.9,
         alignSelf: "center",
         marginTop: 10,
@@ -102,7 +151,7 @@ const styles = StyleSheet.create ({
 
     textInput: {
         borderColor: "#75FFAF",
-        color: "#dadada",
+        color: "black",
         backgroundColor: "#e8e8e8",
         borderWidth: 1,
         height: height * 0.3,
