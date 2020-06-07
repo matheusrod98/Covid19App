@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, Button, AsyncStorage, FlatList, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { SafeAreaView, AsyncStorage, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import api from '../services/api'
 import Post from "../components/Post"
@@ -7,7 +7,7 @@ import FeedHeader from "../components/FeedHeader"
 import { width, height } from "../constants/dimensions"
 import { MaterialCommunityIcons  } from '@expo/vector-icons';
 
-export default function FeedScreen ({navigation: {navigate}}) {
+export default function FeedScreen ({ navigation: {navigate},  route } ) {
     const [posts, setPosts] = useState (null)
     const [postCount, setPostCount] = useState (null)
     const [loadingPosts, setLoadingPosts] = useState (true)
@@ -34,6 +34,12 @@ export default function FeedScreen ({navigation: {navigate}}) {
     useEffect (() => {
         loadPosts ()
     }, [])
+
+    useEffect (() => {
+        if (route.params?.newPost) {
+            setPosts ([route.params?.newPost, ...posts])
+        }
+    }, [route.params?.newPost])
 
     async function Logout () {
         try {

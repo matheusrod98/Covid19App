@@ -13,30 +13,49 @@ const PostingScreen = ({ navigation }) => {
     const [image, setImage] = useState (null)
 
     async function post () {
-        const postData = {
-            usuario: await AsyncStorage.getItem ("user"),
-            titulo: title,
-            texto: text,
-            image: null
-        }
-        
-        jsonPostData = JSON.stringify (postData)
-        
         try {
-            const response = await api.post ("/postagens/", jsonPostData, {
-                headers: {
-                    "Content-Type": "application/json",
+            const user = await AsyncStorage.getItem ("user")
+
+            if (image) {
+                const form_data = new FormData ()
+                form_data.append ("usuario", user)
+                form_data.append ("titulo", title)
+                form_data.append ("texto", text)
+                form_data.append ("image", {
+                    type: "image/jpg",
+                    uri: image,
+                    name: "userName.jpg",
+                })
+
+                const response = await api.post ("/postagens/", form_data, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    }
+                })
+            }
+
+            else {
+                const postData = {
+                    usuario: user,
+                    titulo: title,
+                    texto: text,
+                    image: null
                 }
-            })
-            console.log (response)
-
+                
+                jsonPostData = JSON.stringify (postData)
+                
+                const response = await api.post ("/postagens/", jsonPostData, {
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                })
+                navigation.navigate ("Feed", { newPost: response.data })
+            }
         }
+
         catch (error) {
-            alert ("Houve algum erro.")
-        }
-
-        finally {
-            navigation.navigate ("Feed")
+            alert ("Ocorreu algum problema...")
+            navigation.navigate ("Feed");
         }
     }
 
@@ -48,7 +67,7 @@ const PostingScreen = ({ navigation }) => {
                 </TouchableOpacity>
             ),
         })
-    }, [navigation])
+    }, [navigation, title, text, image])
 
     async function chooseFromGallery () {
         const { status } = await Permissions.askAsync (Permissions.CAMERA_ROLL)
