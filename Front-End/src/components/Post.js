@@ -1,10 +1,13 @@
 import React from "react"
-import { View, Text, StyleSheet, Image } from 'react-native'
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import { MaterialCommunityIcons  } from '@expo/vector-icons';
 
 import { width, height } from "../constants/dimensions"
 
-const Post = ({ data }) => {
+const Post = ({ data, onFeed }) => {
     const { usuario, titulo, texto, imagem } = data
+    const navigation = useNavigation ();
 
     return (
         <View style = { styles.container }>
@@ -17,6 +20,9 @@ const Post = ({ data }) => {
                 source = {{ uri: `http://127.0.0.1:8000${ imagem }`}}
             />
             )}
+            { onFeed && <TouchableOpacity style =  { styles.commentButton } onPress =  { () => navigation.navigate ("comment"), { data: data } }>
+                <MaterialCommunityIcons name="comment-text-multiple-outline" size={22} color="#FFFFFF" />
+            </TouchableOpacity> }
         </View>
     )
 }
@@ -55,7 +61,19 @@ const styles = StyleSheet.create ({
         width: "100%",
         height: width * 0.8,
         borderRadius: 5,
-    }
+    },
+
+    commentButton: {
+        position: "absolute",
+        width: width * 0.1,
+        height: width * 0.1,
+        borderRadius: width * 0.1 / 2,
+        backgroundColor: "#75FFAF",
+        marginLeft: width * 0.7,
+        top: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+    },
 })
 
 export default Post

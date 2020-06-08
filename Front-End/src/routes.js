@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import {AsyncStorage} from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {MaterialCommunityIcons, Entypo} from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { AsyncStorage, TouchableOpacity } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { MaterialCommunityIcons, Entypo } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import LoginScreen from './screens/LoginScreen';
 import FeedScreen from './screens/FeedScreen';
@@ -14,11 +15,11 @@ import PostingScreen from './screens/PostingScreen';
 const Stack = createStackNavigator ();
 const Tab = createBottomTabNavigator ();
 
-function LoggedInFlow () {
+function LoggedInFlow ({ navigation }) {
     return (
         <Stack.Navigator>
             <Stack.Screen name = "mainFeed" component = {TabFlow} options = {{headerShown: false}} />
-            <Stack.Screen name = "comment" component = {CommentScreen} />
+            <Stack.Screen name = "comment" component = {CommentScreen} options = {{ headerTitle: false, headerTintColor: "#75ffaf" }}/>
             <Stack.Screen 
                 name = "posting" 
                 component = {PostingScreen} 
@@ -27,7 +28,15 @@ function LoggedInFlow () {
                     title: "Criar Publicação",
                     headerTitleStyle: {
                         fontWeight: "bold",
-                    }
+                    },
+
+                    headerLeft: () => (
+                        <TouchableOpacity
+                            style = {{ height: 24, width: 24, marginHorizontal: 11, marginVertical: 3 }} onPress = { () => navigation.goBack () } 
+                        >
+                            <MaterialIcons name="arrow-back" size={24} color="#75FFAF" />
+                        </TouchableOpacity>
+                    )
                 }}
             />
         </Stack.Navigator>
