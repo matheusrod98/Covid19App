@@ -1,20 +1,81 @@
-import React, { useState } from 'react'
-import { View, SafeAreaView, StyleSheet, TouchableOpacity, Text, FlatList, KeyboardAvoidingView } from 'react-native'
+import React, { useState, useLayoutEffect } from 'react'
+import { View, SafeAreaView, StyleSheet, TouchableOpacity, Text, FlatList, KeyboardAvoidingView, Keyboard } from 'react-native'
 import {TextInput} from 'react-native-gesture-handler'
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons"
 
 import { width, height } from '../constants/dimensions'
 import CommentHeader from "../components/CommentHeader";
+import Comment from "../components/Comment";
+import api from "../services/api";
 
-export default function CommentScreen ({ route }) {
+export default function CommentScreen ({ route, navigation }) {
     const [comment, setComment] = useState ("")
-    
-    const handleCommentSubmit = () => {
-        alert ("Botão clicado.")
+    const [user, setUser] = useState ("");
+    const [commentsList, setCommentsList] = useState (null);
+    const [count, setCount] = useState (null);
+
+    useEffect (() => { 
+        loadUser ();
+        loadComments ();
+    }, []);
+
+    useLayoutEffect (() => {
+        navigation.setOptions ({
+            headerLeft: () => (
+                <TouchableOpacity onPress = { () => navigation.pop () }>
+                    <MaterialIcons name = "arrow-back" size = { 35 } color = "#39CB7F"/>
+                </TouchableOpacity>
+            ),
+
+            headerRight: () => (
+                <TouchableOpacity onPress = { () => loadComments }>
+                    <MaterialCommunityIcons name = "reload" size = { 35 } color = "#39CB7F"/>
+                </TouchableOpacity>
+            )
+        }) 
+    }, []);
+
+    const id = route.params.id;
+
+    async function loadComments () {
+        try {
+            const response = await api.get (`/postagens/${ id }/comentarios/`);
+            setCommentsList (response.data.comentarios);
+            setCount (response.data.comentarios.lenght);
+        }
+
+        catch (error) {
+            console.log (error);
+        }
     }
 
-    const data = [
-        { id: 1 }
-    ]
+    async function loadUser () {
+        const response = await AsyncStorage.getItem ("user");
+        setUser (response);
+    } 
+
+    const handleCommentSubmit = async () => {
+        try {
+            const newPost = {
+                usuario: user,
+                texto: comment,
+                postagem: id
+            }
+
+            const response = await api.post ('/comentarios/', newPost);
+            setCommentsList ([...commentsList, response])
+            setCount (count + 1);
+        }
+        
+        catch (error) {
+            Alert.alert ("Seu comentário não foi postado.");
+        }
+
+        finally {
+            Keyboard.dismiss ();
+            setComment ("");
+        }
+    }
 
     return (
         <KeyboardAvoidingView 
@@ -24,10 +85,11 @@ export default function CommentScreen ({ route }) {
         >
             <SafeAreaView style = { styles.container }>
                 <FlatList
-                    data = { data }
+                    data = { commentsList }
                     keyExtractor =  { (comment) => string (comment.id) }
                     showsVerticalScrollIndicator = { false }
-                    ListHeaderComponent = { CommentHeader }
+                    ListHeaderComponent = { <CommentHeader data = { route.params.data } count = { count }/>}
+                    renderItem = { ({ item }) => <Comment data = { item }/> } 
                 />
                 style = { styles.container }>
                 <View style = { styles.inputContainer }>
